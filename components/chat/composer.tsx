@@ -1,13 +1,20 @@
 "use client";
 
 import { ArrowUpIcon, Loader2Icon, SquareIcon } from "lucide-react";
-import { useCallback, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export function ChatComposer({
-  autoFocus = false,
+  autoFocus = true,
   className,
   disabled = false,
   disabledReason,
@@ -33,6 +40,21 @@ export function ChatComposer({
   readonly placeholder?: string;
   readonly value: string;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaDisabled = disabled || isBusy || isPreparing;
+
+  useEffect(() => {
+    if (!autoFocus || textareaDisabled) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      textareaRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [autoFocus, textareaDisabled]);
+
   const submitValue = useCallback(() => {
     const text = value.trim();
     if (!text || disabled || isBusy || isPreparing) {
@@ -75,11 +97,12 @@ export function ChatComposer({
       <textarea
         autoFocus={autoFocus}
         className="max-h-32 min-h-12 w-full resize-none bg-transparent px-3 pt-3 pb-1 text-[15px] leading-6 outline-none placeholder:text-muted-foreground/45 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 dark:placeholder:text-muted-foreground/60"
-        disabled={disabled || isBusy || isPreparing}
+        disabled={textareaDisabled}
         id="eve-composer"
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
+        ref={textareaRef}
         rows={2}
         value={value}
       />
