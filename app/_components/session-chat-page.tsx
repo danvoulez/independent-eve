@@ -113,6 +113,7 @@ export function SessionChatPage({
   useEffect(() => {
     if (
       pendingConsumedRef.current ||
+      isLoadingChat ||
       !controllerReady ||
       controllerStatus.isBusy ||
       controllerStatus.isDisabled
@@ -144,6 +145,7 @@ export function SessionChatPage({
     controllerReady,
     controllerStatus.isBusy,
     controllerStatus.isDisabled,
+    isLoadingChat,
     pendingUserMessage,
   ]);
 

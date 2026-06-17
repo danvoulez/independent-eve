@@ -1528,29 +1528,88 @@ function preserveKnownInitialEvents(
   snapshotEvents: readonly HandleMessageStreamEvent[],
   knownEvents: readonly HandleMessageStreamEvent[],
 ) {
-  if (knownEvents.length === 0 || startsWithKnownEvents(snapshotEvents, knownEvents)) {
+  if (knownEvents.length === 0) {
     return snapshotEvents;
+  }
+
+  if (snapshotEvents.length === 0) {
+    return knownEvents;
+  }
+
+  const sharedPrefixLength = countSharedEventPrefix(snapshotEvents, knownEvents);
+
+  if (sharedPrefixLength === knownEvents.length) {
+    return snapshotEvents;
+  }
+
+  if (sharedPrefixLength === snapshotEvents.length) {
+    return knownEvents;
+  }
+
+  if (sharedPrefixLength > 0) {
+    return [...knownEvents, ...snapshotEvents.slice(sharedPrefixLength)];
   }
 
   return [...knownEvents, ...snapshotEvents];
 }
 
-function startsWithKnownEvents(
+function countSharedEventPrefix(
   events: readonly HandleMessageStreamEvent[],
   knownEvents: readonly HandleMessageStreamEvent[],
 ) {
-  if (events.length < knownEvents.length) {
-    return false;
+  const count = Math.min(events.length, knownEvents.length);
+
+  for (let index = 0; index < count; index += 1) {
+    if (!areSameStreamEvent(knownEvents[index]!, events[index])) {
+      return index;
+    }
   }
 
-  return knownEvents.every((event, index) => areSameStreamEvent(event, events[index]));
+  return count;
 }
 
 function areSameStreamEvent(
   left: HandleMessageStreamEvent,
   right: HandleMessageStreamEvent | undefined,
 ) {
-  return right !== undefined && JSON.stringify(left) === JSON.stringify(right);
+  return right !== undefined && areEqualJsonValues(left, right);
+}
+
+function areEqualJsonValues(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) {
+    return true;
+  }
+
+  if (typeof left !== typeof right || left === null || right === null) {
+    return false;
+  }
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+      return false;
+    }
+
+    return left.every((item, index) => areEqualJsonValues(item, right[index]));
+  }
+
+  if (typeof left !== "object" || typeof right !== "object") {
+    return false;
+  }
+
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftRecord);
+  const rightKeys = Object.keys(rightRecord);
+
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+
+  return leftKeys.every(
+    (key) =>
+      Object.prototype.hasOwnProperty.call(rightRecord, key) &&
+      areEqualJsonValues(leftRecord[key], rightRecord[key]),
+  );
 }
 
 function getLocalEventKey(event: HandleMessageStreamEvent) {
