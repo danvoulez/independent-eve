@@ -98,7 +98,6 @@ pnpm dev
 - Better Auth sign-in with Vercel
 - Mandatory Neon-backed chat history
 - Mandatory Upstash Redis rate limiting for authenticated chat sends
-- 8,000 character maximum per chat message
 - Drizzle schema and migrations under `lib/db`
 - Saved Eve session cursors and event snapshots
 - Sidebar history with delete and new-chat actions
