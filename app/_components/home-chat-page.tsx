@@ -151,7 +151,7 @@ export function HomeChatPage() {
           <div className="w-full max-w-2xl space-y-5 sm:space-y-7 md:space-y-8">
             <h1 className="flex justify-center">
               <img
-                alt="Eve"
+                alt="eve"
                 className="size-16 select-none invert sm:size-20 md:size-24 dark:invert-0"
                 draggable={false}
                 src="/eve.svg"

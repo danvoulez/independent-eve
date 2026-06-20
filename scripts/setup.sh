@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Eve Chat Template — one-shot setup.
+# eve Chat Template — one-shot setup.
 #
 # Links the Vercel project, provisions Neon, registers the "Sign in with Vercel"
 # OAuth app, sets every environment variable through the Vercel API, pulls them
@@ -27,7 +27,7 @@ done
 
 NODE_MAJOR=$(node -e 'console.log(process.versions.node.split(".")[0])')
 if [ "$NODE_MAJOR" -lt 24 ]; then
-  echo "Eve requires Node.js 24 or newer. You are running $(node -v). Please upgrade Node.js and try again."
+  echo "eve requires Node.js 24 or newer. You are running $(node -v). Please upgrade Node.js and try again."
   exit 1
 fi
 

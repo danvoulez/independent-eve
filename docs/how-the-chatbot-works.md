@@ -1,12 +1,12 @@
 # How the Chatbot Works
 
-This document explains the Eve chat template end to end. It is written for
+This document explains the eve chat template end to end. It is written for
 future maintainers who need to understand why the app is shaped this way, where
 state lives, how messages stream, and how to safely change the chat experience.
 
 The short version: this is not a generic stateless chat UI. The browser talks to
-an Eve agent through same-origin `/eve/v1/*` routes, persists Eve stream events
-to Postgres as they arrive, keeps an Eve session cursor so interrupted streams
+an eve agent through same-origin `/eve/v1/*` routes, persists eve stream events
+to Postgres as they arrive, keeps an eve session cursor so interrupted streams
 can resume, and uses a static Next.js shell so the sidebar and composer do not
 thrash during route navigation.
 
@@ -14,7 +14,7 @@ thrash during route navigation.
 
 The template has four major layers:
 
-1. The Eve agent layer in `agent/`
+1. The eve agent layer in `agent/`
 2. The Next.js shell and page layer in `app/`
 3. The chat UI components in `components/chat/`
 4. The persistence, auth, setup, and rate-limit layer in `lib/`
@@ -23,8 +23,8 @@ Important files:
 
 | File | Purpose |
 | --- | --- |
-| `agent/agent.ts` | Defines the Eve agent and model. |
-| `agent/channels/eve.ts` | Configures the Eve web channel and auth adapters. |
+| `agent/agent.ts` | Defines the eve agent and model. |
+| `agent/channels/eve.ts` | Configures the eve web channel and auth adapters. |
 | `agent/channels/slack.ts` | Configures the Slack channel route and Vercel Connect credentials. |
 | `agent/connections/notion.ts` | Defines the Notion MCP connection through Vercel Connect. |
 | `agent/connections/linear.ts` | Defines the Linear MCP connection through Vercel Connect. |
@@ -36,9 +36,9 @@ Important files:
 | `app/_components/agent-chat-shell.tsx` | Client shell for sidebar state, history pagination, auth modal, and shared chat context. |
 | `app/_components/home-chat-page.tsx` | Root-page composer and logo experience. |
 | `app/_components/session-chat-page.tsx` | Session-page composer, active chat sync, and controller wiring. |
-| `app/_components/agent-chat.tsx` | The Eve client bridge: sending, streaming, persistence, resume, pending auth, and display state. |
+| `app/_components/agent-chat.tsx` | The eve client bridge: sending, streaming, persistence, resume, pending auth, and display state. |
 | `components/chat/composer.tsx` | The controlled chat input. |
-| `components/chat/message.tsx` | Renders Eve messages, markdown, reasoning, tools, and input requests. |
+| `components/chat/message.tsx` | Renders eve messages, markdown, reasoning, tools, and input requests. |
 | `components/chat/sidebar.tsx` | Paginated chat history sidebar. |
 | `components/chat/integrations-menu.tsx` | Per-turn connection toggle UI. |
 | `app/actions/chat.ts` | Server actions for chat creation, persistence, pending state, skip auth, and rate checks. |
@@ -47,7 +47,7 @@ Important files:
 | `lib/db/queries.ts` | Chat list, chat load, event save, snapshot save, and delete queries. |
 | `lib/setup.ts` | Setup readiness checks for Neon, migrations, auth, and Redis. |
 | `lib/auth.ts` | Better Auth configuration with Sign in with Vercel. |
-| `lib/eve-auth.ts` | Converts a Better Auth viewer into an Eve channel principal. |
+| `lib/eve-auth.ts` | Converts a Better Auth viewer into an eve channel principal. |
 | `lib/rate-limit.ts` | Upstash Redis based fixed-window rate limiting. |
 
 ## Runtime Model
@@ -55,21 +55,21 @@ Important files:
 There are two related but separate concepts:
 
 1. A **local app chat**, represented by a row in the `chat` table.
-2. An **Eve session**, represented by Eve's `SessionState` and remote session
+2. An **eve session**, represented by eve's `SessionState` and remote session
    stream.
 
 The app chat gives the user a stable URL such as `/chat/abc`, a sidebar title,
-and persisted event history. The Eve session is the durable conversation state
-that Eve uses to continue, wait for authorization, resume streams, and accept
+and persisted event history. The eve session is the durable conversation state
+that eve uses to continue, wait for authorization, resume streams, and accept
 follow-up input.
 
-The app stores Eve session state on the chat row:
+The app stores eve session state on the chat row:
 
 ```ts
 chat.eveSession: SessionState | null
 ```
 
-The app stores Eve stream events in ordered rows:
+The app stores eve stream events in ordered rows:
 
 ```ts
 chat_event.eventIndex: number
@@ -77,7 +77,7 @@ chat_event.event: HandleMessageStreamEvent
 ```
 
 Those two pieces are intentionally separate. The `eveSession.streamIndex` tells
-Eve where to resume from in the remote session stream. The local
+eve where to resume from in the remote session stream. The local
 `chat_event.eventIndex` tells Postgres how to order the event log for rendering.
 Do not treat those indices as interchangeable.
 
@@ -198,7 +198,7 @@ The root route is `app/(chat)/page.tsx`, rendered by `HomeChatPage`.
 
 The root page is the "start a new chat" experience. It has:
 
-- the Eve logo
+- the eve logo
 - a centered composer
 - footer links
 - the shared sidebar and top auth controls from `AgentChatShell`
@@ -216,8 +216,8 @@ When the user submits the first message:
 6. The new chat is inserted into the sidebar with `touchChat(created)`.
 7. The app navigates to `/chat/<id>`.
 
-The root page does not call Eve directly. It creates the app chat first and
-lets the session route consume the pending message once the Eve client is ready.
+The root page does not call eve directly. It creates the app chat first and
+lets the session route consume the pending message once the eve client is ready.
 
 That matters because a chat URL should exist before the first response starts
 streaming.
@@ -254,10 +254,10 @@ once:
 - the controller is not busy
 - the controller is not disabled by setup or pending authorization
 
-This is how the first message from the root page actually gets sent to Eve after
+This is how the first message from the root page actually gets sent to eve after
 navigation.
 
-## Eve Client Bridge
+## eve Client Bridge
 
 Most of the chat logic lives in `app/_components/agent-chat.tsx`.
 
@@ -274,7 +274,7 @@ const agent = useEveAgent({
 });
 ```
 
-`useEveAgent` handles reducing Eve stream events into renderable chat messages.
+`useEveAgent` handles reducing eve stream events into renderable chat messages.
 The template wraps it with persistence and resume logic.
 
 ### Persisted Client Session
@@ -292,7 +292,7 @@ It exposes:
 When `send(input)` is called:
 
 1. It normalizes the input.
-2. It posts to `/eve/v1/session` for a new Eve session, or
+2. It posts to `/eve/v1/session` for a new eve session, or
    `/eve/v1/session/:sessionId` for a continuation.
 3. It reads the `x-eve-session-id` response header.
 4. It updates the local `SessionState`.
@@ -300,7 +300,7 @@ When `send(input)` is called:
 6. It returns a browser-compatible message response whose async iterator reads
    `/eve/v1/session/:sessionId/stream`.
 
-The app never talks directly to a third-party model endpoint. It talks to Eve's
+The app never talks directly to a third-party model endpoint. It talks to eve's
 same-origin session API, which is mounted by `withEve(nextConfig)`.
 
 ### Streaming
@@ -354,7 +354,7 @@ The intended order is:
 
 1. Ignore empty input.
 2. Ignore if the session is already busy.
-3. If Eve is waiting on connection authorization, do not send regular user
+3. If eve is waiting on connection authorization, do not send regular user
    text. Show a helpful error instead.
 4. Render an optimistic user bubble immediately when possible.
 5. Run `prepareSend(message)`.
@@ -363,7 +363,7 @@ The intended order is:
 8. Let `useEveAgent`, `onEvent`, and `onFinish` handle streaming and
    persistence.
 
-`prepareSend` does the things that must happen before talking to Eve:
+`prepareSend` does the things that must happen before talking to eve:
 
 - verify setup is ready
 - request sign-in if there is no viewer
@@ -371,11 +371,11 @@ The intended order is:
 - create a chat row if one does not exist yet
 - navigate to the new chat URL when necessary
 
-The optimistic user bubble is separate from persisted Eve events. It is created
-with `createPendingUserMessage`. Once the real Eve message appears in the
+The optimistic user bubble is separate from persisted eve events. It is created
+with `createPendingUserMessage`. Once the real eve message appears in the
 reduced message list, `hasLatestUserMessage` clears the local pending bubble.
 
-This keeps the UI feeling immediate while still letting Eve produce the
+This keeps the UI feeling immediate while still letting eve produce the
 canonical event log.
 
 ## Persistence Model
@@ -410,13 +410,13 @@ When `useEveAgent` finishes a turn, it calls `onFinish(snapshot)`.
 
 The snapshot includes:
 
-- the full reduced event list known by Eve React
-- the current Eve `SessionState`
+- the full reduced event list known by eve React
+- the current eve `SessionState`
 
 The template calls `saveChatSnapshotAction({ chatId, events, session })`.
 
 `saveChatSnapshot` upserts each event by index, deletes any events past the new
-snapshot length, saves the Eve session state, clears `pendingUserMessage`, and
+snapshot length, saves the eve session state, clears `pendingUserMessage`, and
 updates the chat timestamp.
 
 ### Why Snapshot Merging Exists
@@ -446,7 +446,7 @@ follow-up sends.
 
 The flow:
 
-1. Before sending to Eve, the app calls `markChatPendingMessageAction`.
+1. Before sending to eve, the app calls `markChatPendingMessageAction`.
 2. The chat row stores:
    - `pendingUserMessage`
    - `pendingUserMessageCreatedAt`
@@ -458,12 +458,12 @@ The flow:
 6. `saveChatSnapshot` and `skipChatAuthorization` clear pending state.
 
 This gives the app a way to recover from "message was accepted by the UI but the
-browser left before Eve completed."
+browser left before eve completed."
 
 ## Refresh And Resume
 
-If a user refreshes during an in-progress Eve turn, the app can resume from the
-saved Eve session.
+If a user refreshes during an in-progress eve turn, the app can resume from the
+saved eve session.
 
 `AgentChatSession` checks:
 
@@ -498,10 +498,10 @@ snapshot catches up.
 
 ## Authorization Flow For Connections
 
-Connections are not string-parsed from assistant text. Eve emits structured
+Connections are not string-parsed from assistant text. eve emits structured
 authorization events.
 
-When a connection requires auth, Eve emits:
+When a connection requires auth, eve emits:
 
 ```txt
 authorization.required
@@ -518,18 +518,18 @@ The prompt can show:
 
 - the connection display name
 - the authorization description
-- a Connect link if Eve provided one
+- a Connect link if eve provided one
 - a Skip button
 
 While an authorization is pending, regular chat input is disabled for that
-session. This is intentional because Eve is waiting for a structured outcome,
+session. This is intentional because eve is waiting for a structured outcome,
 not a normal user message.
 
 ### Connect
 
-Clicking Connect opens the authorization URL provided by Eve. After the user
-authorizes the connection, Eve should receive the callback and continue the
-turn. The browser stream then receives the next events for that same Eve
+Clicking Connect opens the authorization URL provided by eve. After the user
+authorizes the connection, eve should receive the callback and continue the
+turn. The browser stream then receives the next events for that same eve
 session.
 
 ### Skip
@@ -561,13 +561,13 @@ enabledConnections = { notion: true }
 ```
 
 When a message is sent, the app passes a natural-language `clientContext` to
-Eve:
+eve:
 
 ```ts
 createConnectionClientContext(enabledConnections)
 ```
 
-If a connection is enabled, the context tells Eve which of Notion, Linear, and
+If a connection is enabled, the context tells eve which of Notion, Linear, and
 Sentry the user enabled for this turn. Disabled connections are called out so
 the model does not use them unless the user enables them first.
 
@@ -614,7 +614,7 @@ The app uses Better Auth with Sign in with Vercel.
 `lib/session.ts` returns a safe `Viewer` object for server components. It returns
 `null` if setup is incomplete so auth failures do not cascade into the chat UI.
 
-`lib/eve-auth.ts` adapts the Better Auth session into an Eve channel principal:
+`lib/eve-auth.ts` adapts the Better Auth session into an eve channel principal:
 
 ```ts
 {
@@ -755,14 +755,14 @@ The composer:
 - submits on Enter
 - inserts a newline on Shift+Enter
 - disables while a request is in flight
-- shows a stop button when Eve is busy
+- shows a stop button when eve is busy
 - shows a spinner when the root page is creating a chat
 - wraps disabled states in a tooltip
 
 Root and session pages render the same composer component, but they place it
 differently:
 
-- root page: centered with the Eve logo
+- root page: centered with the eve logo
 - session page: pinned near the bottom of the chat route
 
 This separation prevents root route layout from briefly looking like a session
@@ -784,7 +784,7 @@ Common setup errors:
 Common stream errors:
 
 - stream disconnected before a settled event
-- Eve session missing when trying to resume
+- eve session missing when trying to resume
 - authorization callback not pending
 - rate limit exceeded
 
@@ -815,17 +815,17 @@ looked complete", inspect these pieces first:
 - whether two events were written to the same local `eventIndex`
 - whether `preserveKnownInitialEvents` duplicated or dropped a prefix
 - whether `pendingUserMessage` was left on the chat row after a settled event
-- whether the Eve stream ended with `session.waiting` before the UI expected it
+- whether the eve stream ended with `session.waiting` before the UI expected it
 - whether a local optimistic message was cleared before the real user event
   appeared
 
 ## Adding A New Tool
 
-To add a local Eve tool:
+To add a local eve tool:
 
 1. Create a file in `agent/tools/`.
 2. Export a `defineTool(...)`.
-3. Import/register it according to Eve's agent conventions.
+3. Import/register it according to eve's agent conventions.
 4. Update `agent/instructions.md` so the agent knows when to use it.
 5. If the UI should render a special tool state, update
    `components/chat/message.tsx`.
@@ -843,7 +843,7 @@ To add another Vercel Connect-backed MCP connection:
 4. Add deploy/docs instructions for provisioning that connector.
 5. Extend `EnabledConnections` in `chat-shell-context.tsx`.
 6. Add a toggle in `IntegrationsMenu`.
-7. Update `createConnectionClientContext` so Eve receives per-turn intent.
+7. Update `createConnectionClientContext` so eve receives per-turn intent.
 8. Verify auth-required events render correctly.
 
 Do not parse assistant text to detect auth requirements. Rely on
@@ -903,7 +903,7 @@ flowchart TD
 ```
 
 The browser is allowed to be interrupted. Postgres keeps enough state to rebuild
-the UI and continue from Eve's stream cursor. The static shell keeps navigation
+the UI and continue from eve's stream cursor. The static shell keeps navigation
 smooth. The final snapshot keeps the event log canonical.
 
 That is the core design.

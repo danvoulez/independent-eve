@@ -1,6 +1,6 @@
 # Setup and Deployment
 
-This guide covers local development, one-click deployment, production migrations, Sign in with Vercel, and optional Notion connections for Eve Chat Template.
+This guide covers local development, one-click deployment, production migrations, Sign in with Vercel, and optional Notion connections for eve Chat Template.
 
 ## Prerequisites
 
@@ -150,7 +150,7 @@ You can create the OAuth app from the CLI:
 
 ```bash
 vercel oauth-apps register \
-  --name "Eve Chat Template" \
+  --name "eve Chat Template" \
   --slug "eve-chat-template" \
   --redirect-uri "https://<your-project-production-domain>/api/auth/callback/vercel"
 ```

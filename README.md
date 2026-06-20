@@ -40,7 +40,7 @@ vercel link
 Provision storage with the [Vercel CLI integration commands](https://vercel.com/docs/cli/integration):
 
 ```bash
-# Required: persisted chat, auth, Eve session state, and message snapshots
+# Required: persisted chat, auth, eve session state, and message snapshots
 vercel integration add neon
 
 # Required: Redis-backed rate limiting

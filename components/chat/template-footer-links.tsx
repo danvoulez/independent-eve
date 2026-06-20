@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const EVE_URL = "https://vercel.com/eve";
 const GITHUB_URL = "https://github.com/vercel-labs/eve-chat-template";
-const COPY_PROMPT = `You are helping me bootstrap and deploy my own Eve chat agent from the Vercel Eve chat template.
+const COPY_PROMPT = `You are helping me bootstrap and deploy my own eve chat agent from the Vercel eve chat template.
 
 Source template:
 https://github.com/vercel-labs/eve-chat-template

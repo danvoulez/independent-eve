@@ -1630,7 +1630,7 @@ function toPendingAuthorization(
     description:
       challenge?.instructions ??
       event.data.description ??
-      `Connect ${displayName} to let Eve continue.`,
+      `Connect ${displayName} to let eve continue.`,
     displayName,
     expiresAt: challenge?.expiresAt,
     instructions: challenge?.instructions,
@@ -2053,7 +2053,7 @@ export function EmptyChatBody({ composer }: { readonly composer?: ReactNode }) {
         <div className="w-full max-w-2xl space-y-8 sm:space-y-10 md:space-y-12">
           <h1 className="flex justify-center">
             <img
-              alt="Eve"
+              alt="eve"
               className="size-16 select-none invert sm:size-20 md:size-24 dark:invert-0"
               draggable={false}
               src="/eve.svg"

@@ -27,7 +27,7 @@ export function ChatComposer({
   onChange,
   onStop,
   onSubmit,
-  placeholder = "Ask Eve anything...",
+  placeholder = "Ask eve anything...",
   value,
 }: {
   readonly autoFocus?: boolean;
@@ -99,7 +99,7 @@ export function ChatComposer({
       onSubmit={handleSubmit}
     >
       <label className="sr-only" htmlFor={composerId}>
-        Message Eve
+        Message eve
       </label>
       <textarea
         autoFocus={autoFocus}

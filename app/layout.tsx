@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const title = "Eve Chat Template";
-const description = "Build your own chat agent with Eve.";
+const title = "eve Chat Template";
+const description = "Build your own chat agent with eve.";
 const ogImage = {
   alt: title,
   height: 630,
