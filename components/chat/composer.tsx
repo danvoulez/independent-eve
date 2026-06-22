@@ -103,7 +103,7 @@ export function ChatComposer({
       </label>
       <textarea
         autoFocus={autoFocus}
-        className="max-h-32 min-h-12 w-full resize-none bg-transparent px-3 pt-3 pb-1 text-[15px] leading-6 outline-none placeholder:text-muted-foreground/45 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 dark:placeholder:text-muted-foreground/60"
+        className="max-h-32 min-h-12 w-full resize-none bg-transparent px-3 pt-3 pb-1 text-base leading-6 outline-none placeholder:text-muted-foreground/45 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 md:text-[15px] dark:placeholder:text-muted-foreground/60"
         data-chat-composer-input
         disabled={textareaDisabled}
         id={composerId}
