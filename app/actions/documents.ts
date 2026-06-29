@@ -3,6 +3,7 @@
 import { put } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import {
   createDocument,
   deleteDocumentChunks,
@@ -44,7 +45,12 @@ export async function uploadDocument(formData: FormData) {
 
   const doc = await createDocument(viewer.id, file.name, file.type);
 
-  void indexDocument(doc.id, viewer.id, blob.url, file.type);
+  // Drain the `pending` document asynchronously: respond now, embed after the
+  // response is sent. `after()` keeps the serverless function alive until the
+  // indexing promise settles (a bare fire-and-forget can be frozen mid-embed).
+  // The document stays `pending`/`indexing` until ready; retrieval only reads
+  // `ready` rows, so search never sees a half-indexed document.
+  after(() => indexDocument(doc.id, viewer.id, blob.url, file.type));
 
   revalidatePath("/");
 
